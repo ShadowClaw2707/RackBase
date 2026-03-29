@@ -26,6 +26,16 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Package node_modules for SSH
+        run: |
+          mkdir -p node_modules_ssh
+          cp -r node_modules/ssh2 node_modules_ssh/
+          cp -r node_modules/asn1 node_modules_ssh/
+          cp -r node_modules/bcrypt-pbkdf node_modules_ssh/
+          cp -r node_modules/safer-buffer node_modules_ssh/
+          cp -r node_modules/tweetnacl node_modules_ssh/
+          zip -r node_modules_ssh.zip node_modules_ssh/
+
       - name: Get version from tag
         id: version
         run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
@@ -34,8 +44,17 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: RackBase ${{ steps.version.outputs.version }}
+          body: |
+            ## Installation
+
+            1. Download `main.js`, `manifest.json`, `styles.css` → copy to `<vault>/.obsidian/plugins/rackbase/`
+            2. Download `node_modules_ssh.zip` → extract contents into `<vault>/.obsidian/plugins/rackbase/node_modules/`
+            3. Enable RackBase in Obsidian Settings → Community Plugins
+
+            The `node_modules_ssh.zip` contains the SSH dependencies required by the plugin.
           files: |
             main.js
             manifest.json
             styles.css
-          generate_release_notes: true
+            node_modules_ssh.zip
+          generate_release_notes: false
