@@ -43,10 +43,12 @@ const context = await esbuild.context({
   bundle: true,
   platform: "node",
   external: [
-    "obsidian", "electron", "ssh2",
+    "obsidian", "electron",
     "crypto", "fs", "net", "tls", "http", "https", "stream",
     "events", "path", "dns", "util", "buffer", "zlib",
     "child_process", "os", "assert",
+    // ssh2 optional native deps — not needed for basic SSH
+    "cpu-features", "nan",
     "@codemirror/autocomplete", "@codemirror/collab", "@codemirror/commands",
     "@codemirror/language", "@codemirror/lint", "@codemirror/search",
     "@codemirror/state", "@codemirror/view",

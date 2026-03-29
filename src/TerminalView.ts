@@ -1,9 +1,9 @@
 import { ItemView, WorkspaceLeaf, Notice } from "obsidian";
 import { xtermJs, xtermCss, fitJs } from "xterm-inline";
+import { Client } from "ssh2";
 import { Session } from "./types";
 
 export const TERMINAL_VIEW_TYPE = "rackbase-terminal";
-declare const require: (mod: string) => any;
 
 function buildHtml(): string {
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -115,8 +115,6 @@ export class TerminalView extends ItemView {
 
   private connectSSH(dot: HTMLElement) {
     try {
-      const vault = (this.app as any).vault.adapter.basePath as string;
-      const { Client } = require(`${vault}/.obsidian/plugins/rackbase/node_modules/ssh2`);
       this.sshClient = new Client();
 
       this.sshClient.on("ready", () => {
