@@ -1,0 +1,10 @@
+{
+  "id": "rackbase",
+  "name": "RackBase",
+  "version": "1.0.0",
+  "minAppVersion": "1.0.0",
+  "description": "Homelab SSH & device manager for Obsidian",
+  "author": "Livio",
+  "authorUrl": "",
+  "isDesktopOnly": true
+}

@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RackBase</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container-low": "#131313",
+        "outline": "#757575",
+        "surface-container": "#191a1a",
+        "surface-variant": "#252626",
+        "secondary": "#9c9e9f",
+        "primary": "#cabeff",
+        "on-primary": "#42279f",
+        "primary-container": "#492fa6",
+        "on-primary-container": "#d4c9ff",
+        "on-background": "#e6e5e5",
+        "on-surface": "#e6e5e5",
+        "outline-variant": "#474848",
+        "error": "#ec7c8a",
+        "secondary-container": "#393c3d",
+        "surface-bright": "#2b2c2c",
+        "surface-container-high": "#1f2020",
+        "background": "#0e0e0e",
+        "on-surface-variant": "#ababab",
+      },
+      fontFamily: { "headline": ["Inter"], "body": ["Inter"], "label": ["Inter"] },
+      borderRadius: { "DEFAULT": "0.125rem", "lg": "0.5rem", "xl": "1rem", "2xl": "1.5rem", "full": "9999px" },
+    },
+  },
+}
+</script>
+<style>
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  body { background-color: #0e0e0e; color: #e6e5e5; font-family: 'Inter', sans-serif; }
+  .glass-panel { background: rgba(37,38,38,0.7); backdrop-filter: blur(12px); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body class="flex overflow-hidden" style="height:100vh;">
+
+<!-- Sidebar -->
+<aside class="hidden md:flex flex-col h-screen py-8 gap-4 bg-[#131313] w-64">
+  <div class="px-6 mb-8">
+    <h1 class="text-xl font-black text-[#cabeff]">RackBase</h1>
+    <p class="text-xs tracking-widest text-[#9c9e9f] uppercase mt-1">SSH Manager</p>
+  </div>
+  <nav class="flex-1 flex flex-col gap-1" id="sidebar-nav">
+    <a class="nav-item flex items-center gap-3 px-6 py-3 text-[#cabeff] font-bold border-l-2 border-[#cabeff] bg-[#252626] font-['Inter'] text-sm tracking-wide cursor-pointer" data-tab="sessions">
+      <span class="material-symbols-outlined">dns</span>Sessions
+    </a>
+    <a class="nav-item flex items-center gap-3 px-6 py-3 text-[#9c9e9f] hover:text-[#e6e5e5] hover:bg-[#252626]/50 font-['Inter'] text-sm tracking-wide cursor-pointer" data-tab="vault">
+      <span class="material-symbols-outlined">key</span>Vault
+    </a>
+    <a class="nav-item flex items-center gap-3 px-6 py-3 text-[#9c9e9f] hover:text-[#e6e5e5] hover:bg-[#252626]/50 font-['Inter'] text-sm tracking-wide cursor-pointer" data-tab="quickconnect">
+      <span class="material-symbols-outlined">bolt</span>Quick Connect
+    </a>
+  </nav>
+</aside>
+
+<!-- Main -->
+<main class="flex-1 flex flex-col min-w-0 bg-[#0e0e0e] overflow-hidden">
+  <header class="flex justify-between items-center w-full px-6 py-3 bg-[#0e0e0e] text-[#cabeff]">
+    <span class="text-lg font-bold tracking-widest uppercase" id="header-title">Sessions</span>
+    <div class="flex items-center gap-2">
+      <div class="relative hidden sm:block">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-sm opacity-50">search</span>
+        <input id="search-input" class="bg-[#131313] border-none rounded-md py-1.5 pl-9 pr-4 text-xs focus:ring-1 focus:ring-[#cabeff] w-48 text-[#e6e5e5] outline-none transition-all" placeholder="Filter hosts..." type="text">
+      </div>
+    </div>
+  </header>
+
+  <!-- Sessions Tab -->
+  <div id="tab-sessions" class="tab-content active flex-1 overflow-y-auto p-6 md:p-10">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col gap-2 mb-10">
+        <h2 class="text-3xl font-bold tracking-tight text-[#e6e5e5]">Active Sessions</h2>
+        <p class="text-[#9c9e9f] text-sm">Manage and connect to your configured remote nodes.</p>
+      </div>
+      <div id="sessions-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Cards injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Vault Tab -->
+  <div id="tab-vault" class="tab-content flex-1 overflow-y-auto p-6 md:p-10">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col gap-2 mb-10">
+        <h2 class="text-3xl font-bold tracking-tight text-[#e6e5e5]">Credential Vault</h2>
+        <p class="text-[#9c9e9f] text-sm">Encrypted SSH/RDP credentials. Linked to sessions for auto-login.</p>
+      </div>
+      <div id="credentials-list" class="flex flex-col gap-4">
+        <!-- Credentials injected by JS -->
+      </div>
+      <button onclick="sendToHost({type:'new-credential'})" class="mt-6 flex items-center gap-2 px-5 py-3 rounded-xl border-2 border-[#cabeff] text-[#cabeff] font-bold text-sm hover:bg-[#cabeff] hover:text-[#0e0e0e] transition-all">
+        <span class="material-symbols-outlined">add</span>Add Credential
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Connect Tab -->
+  <div id="tab-quickconnect" class="tab-content flex-1 overflow-y-auto p-6 md:p-10">
+    <div class="max-w-2xl mx-auto">
+      <div class="flex flex-col gap-2 mb-10">
+        <h2 class="text-3xl font-bold tracking-tight text-[#e6e5e5]">Quick Connect</h2>
+        <p class="text-[#9c9e9f] text-sm">Connect to a host without saving a session.</p>
+      </div>
+      <div class="flex flex-col gap-4 bg-[#1f2020] rounded-2xl p-8 border border-white/5">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium uppercase tracking-wider text-[#9c9e9f]">Host / IP</label>
+          <input id="qc-host" type="text" placeholder="192.168.1.1" class="bg-[#131313] border border-[#474848] rounded-lg px-4 py-2.5 text-sm text-[#e6e5e5] outline-none focus:ring-1 focus:ring-[#cabeff]">
+        </div>
+        <div class="flex gap-4">
+          <div class="flex flex-col gap-1 flex-1">
+            <label class="text-xs font-medium uppercase tracking-wider text-[#9c9e9f]">Username</label>
+            <input id="qc-user" type="text" placeholder="root" class="bg-[#131313] border border-[#474848] rounded-lg px-4 py-2.5 text-sm text-[#e6e5e5] outline-none focus:ring-1 focus:ring-[#cabeff]">
+          </div>
+          <div class="flex flex-col gap-1 w-24">
+            <label class="text-xs font-medium uppercase tracking-wider text-[#9c9e9f]">Port</label>
+            <input id="qc-port" type="number" value="22" class="bg-[#131313] border border-[#474848] rounded-lg px-4 py-2.5 text-sm text-[#e6e5e5] outline-none focus:ring-1 focus:ring-[#cabeff]">
+          </div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium uppercase tracking-wider text-[#9c9e9f]">Password</label>
+          <input id="qc-pass" type="password" placeholder="optional" class="bg-[#131313] border border-[#474848] rounded-lg px-4 py-2.5 text-sm text-[#e6e5e5] outline-none focus:ring-1 focus:ring-[#cabeff]">
+        </div>
+        <button onclick="quickConnect()" class="mt-2 w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border-2 border-[#2ecc71] text-[#2ecc71] font-bold text-sm hover:bg-[#2ecc71] hover:text-white transition-all active:scale-95">
+          Connect <span class="material-symbols-outlined text-sm">login</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FAB -->
+<div class="fixed bottom-8 right-8 z-10" id="fab-sessions">
+  <button onclick="sendToHost({type:'new-session'})" class="flex items-center gap-3 px-6 py-4 rounded-full bg-[#492fa6] text-[#d4c9ff] shadow-2xl hover:scale-105 transition-all duration-300">
+    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">add</span>
+    <span class="font-bold tracking-wide">New Session</span>
+  </button>
+</div>
+
+<!-- Mobile Nav -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel flex justify-around items-center py-4 border-t border-[#474848]/10 z-20">
+  <a class="nav-item text-[#cabeff] flex flex-col items-center gap-1 cursor-pointer" data-tab="sessions">
+    <span class="material-symbols-outlined">dns</span><span class="text-[10px]">Sessions</span>
+  </a>
+  <a class="nav-item text-[#9c9e9f] flex flex-col items-center gap-1 cursor-pointer" data-tab="vault">
+    <span class="material-symbols-outlined">key</span><span class="text-[10px]">Vault</span>
+  </a>
+  <a class="nav-item text-[#9c9e9f] flex flex-col items-center gap-1 cursor-pointer" data-tab="quickconnect">
+    <span class="material-symbols-outlined">bolt</span><span class="text-[10px]">Quick</span>
+  </a>
+</nav>
+
+<script>
+// ─── State ──────────────────────────────────────────────────────────────────
+let sessions = [];
+let credentials = [];
+let filterText = "";
+
+// ─── postMessage bridge ──────────────────────────────────────────────────────
+function sendToHost(msg) {
+  window.parent.postMessage(msg, "*");
+}
+
+window.addEventListener("message", (event) => {
+  const msg = event.data;
+  if (!msg || !msg.type) return;
+  if (msg.type === "init") {
+    sessions = msg.sessions || [];
+    credentials = msg.credentials || [];
+    renderSessions();
+    renderCredentials();
+  } else if (msg.type === "sessions-updated") {
+    sessions = msg.sessions || [];
+    renderSessions();
+  } else if (msg.type === "credentials-updated") {
+    credentials = msg.credentials || [];
+    renderCredentials();
+  }
+});
+
+// Signal ready to host
+window.addEventListener("load", () => {
+  sendToHost({ type: "ready" });
+});
+
+// ─── Tab navigation ──────────────────────────────────────────────────────────
+const tabTitles = { sessions: "Sessions", vault: "Vault", quickconnect: "Quick Connect" };
+
+document.querySelectorAll(".nav-item").forEach((el) => {
+  el.addEventListener("click", () => {
+    const tab = el.dataset.tab;
+    switchTab(tab);
+  });
+});
+
+function switchTab(tab) {
+  document.querySelectorAll(".tab-content").forEach((t) => t.classList.remove("active"));
+  document.getElementById("tab-" + tab)?.classList.add("active");
+  document.querySelectorAll(".nav-item").forEach((el) => {
+    const active = el.dataset.tab === tab;
+    el.classList.toggle("text-[#cabeff]", active);
+    el.classList.toggle("font-bold", active);
+    el.classList.toggle("border-l-2", active);
+    el.classList.toggle("border-[#cabeff]", active);
+    el.classList.toggle("bg-[#252626]", active);
+    el.classList.toggle("text-[#9c9e9f]", !active);
+  });
+  document.getElementById("header-title").textContent = tabTitles[tab] ?? tab;
+  document.getElementById("fab-sessions").style.display = tab === "sessions" ? "" : "none";
+}
+
+// ─── Search ──────────────────────────────────────────────────────────────────
+document.getElementById("search-input").addEventListener("input", (e) => {
+  filterText = e.target.value.toLowerCase();
+  renderSessions();
+});
+
+// ─── Sessions render ─────────────────────────────────────────────────────────
+function renderSessions() {
+  const grid = document.getElementById("sessions-grid");
+  const filtered = sessions.filter(
+    (s) =>
+      !filterText ||
+      s.name.toLowerCase().includes(filterText) ||
+      s.host.toLowerCase().includes(filterText) ||
+      s.username.toLowerCase().includes(filterText)
+  );
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="col-span-3 text-center text-[#9c9e9f] py-20">
+      <span class="material-symbols-outlined text-4xl mb-3 block">dns</span>
+      No sessions yet. Click <strong class="text-[#cabeff]">New Session</strong> to add one.
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((s) => sessionCard(s)).join("");
+}
+
+function sessionCard(s) {
+  const tagHtml = s.tags?.map((t) => `
+    <div class="flex items-center gap-2.5 text-[#9c9e9f]">
+      <span class="material-symbols-outlined text-[18px]">router</span>
+      <span class="text-xs font-medium uppercase tracking-wider">${escHtml(t.key)}: ${escHtml(t.value)}</span>
+    </div>`).join("") ?? "";
+
+  return `
+  <div class="group relative flex flex-col bg-[#1f2020] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-[#252626] hover:-translate-y-1 hover:shadow-2xl border border-white/5">
+    <div class="absolute left-0 top-0 bottom-0 w-1.5" style="background:${escHtml(s.color)}"></div>
+    <div class="flex flex-col p-6 h-full">
+      <div class="flex justify-between items-start mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-[#131313] flex items-center justify-center text-2xl border border-[#474848]/10">${s.emoji}</div>
+        <div class="flex items-center gap-1">
+          <button onclick='sendToHost({type:"delete-session",sessionId:"${s.id}"})' class="p-2 text-[#9c9e9f] hover:text-[#ec7c8a] rounded-lg transition-colors" title="Delete">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+          </button>
+          <button onclick='sendToHost({type:"edit-session",sessionId:"${s.id}"})' class="p-2 text-[#9c9e9f] hover:text-[#e6e5e5] rounded-lg transition-colors" title="Edit">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+          </button>
+        </div>
+      </div>
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-[#e6e5e5] truncate">${escHtml(s.name)}</h3>
+        <span class="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#252626] text-[#9c9e9f] mt-1 inline-block">${escHtml(s.protocol)}</span>
+      </div>
+      <div class="flex flex-col gap-3 mb-8">
+        <div class="flex items-center gap-2.5 text-[#9c9e9f]">
+          <span class="material-symbols-outlined text-[18px]">person</span>
+          <span class="text-xs font-medium uppercase tracking-wider">${escHtml(s.username)}</span>
+        </div>
+        <div class="flex items-center gap-2.5 text-[#9c9e9f]">
+          <span class="material-symbols-outlined text-[18px]">language</span>
+          <span class="text-xs font-medium uppercase tracking-wider">${escHtml(s.host)}:${s.port}</span>
+        </div>
+        ${tagHtml}
+      </div>
+      <div class="mt-auto">
+        <button onclick='sendToHost({type:"connect",sessionId:"${s.id}"})' class="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl border-2 border-[#2ecc71] text-[#2ecc71] font-bold text-sm hover:bg-[#2ecc71] hover:text-white transition-all active:scale-95">
+          Connect <span class="material-symbols-outlined text-sm">login</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── Credentials render ───────────────────────────────────────────────────────
+function renderCredentials() {
+  const list = document.getElementById("credentials-list");
+  if (credentials.length === 0) {
+    list.innerHTML = `<div class="text-center text-[#9c9e9f] py-10">
+      <span class="material-symbols-outlined text-4xl mb-3 block">key_off</span>
+      No credentials saved yet.
+    </div>`;
+    return;
+  }
+  list.innerHTML = credentials.map((c) => `
+    <div class="flex items-center justify-between bg-[#1f2020] rounded-2xl px-6 py-4 border border-white/5">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-[#131313] flex items-center justify-center">
+          <span class="material-symbols-outlined text-[#cabeff]">key</span>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-[#e6e5e5]">${escHtml(c.label)}</p>
+          <p class="text-xs text-[#9c9e9f]">${escHtml(c.username)}</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick='sendToHost({type:"edit-credential",credentialId:"${c.id}"})' class="p-2 text-[#9c9e9f] hover:text-[#e6e5e5] rounded-lg transition-colors">
+          <span class="material-symbols-outlined text-[20px]">edit</span>
+        </button>
+        <button onclick='sendToHost({type:"delete-credential",credentialId:"${c.id}"})' class="p-2 text-[#9c9e9f] hover:text-[#ec7c8a] rounded-lg transition-colors">
+          <span class="material-symbols-outlined text-[20px]">delete</span>
+        </button>
+      </div>
+    </div>`).join("");
+}
+
+// ─── Quick Connect ────────────────────────────────────────────────────────────
+function quickConnect() {
+  const host = document.getElementById("qc-host").value.trim();
+  const username = document.getElementById("qc-user").value.trim() || "root";
+  const port = parseInt(document.getElementById("qc-port").value) || 22;
+  const password = document.getElementById("qc-pass").value;
+  if (!host) return;
+  sendToHost({ type: "quick-connect", host, username, port, password });
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+</script>
+</body>
+</html>
